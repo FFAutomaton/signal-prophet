@@ -5,7 +5,7 @@ from ml.model_utils.supressor import suppress_stdout_stderr
 
 
 class ProphetModel:
-    def __init__(self, train, horizon, additional_features, growth="logistic",
+    def __init__(self, train, horizon, additional_features, growth="linear",
                  seasonality_mode="multiplicative", changepoint_range=0.9, changepoint_prior_scale=0.01,
                  seasonality_prior_scale=10, holidays_prior_scale=10, outlier_remove_window=0
                  ):
@@ -27,14 +27,14 @@ class ProphetModel:
         # Create model prophet model object.
         self.prophet = Prophet(
             growth=growth,
-            seasonality_mode=seasonality_mode,
-            seasonality_prior_scale=seasonality_prior_scale,
-            changepoint_range=changepoint_range,
-            changepoint_prior_scale=changepoint_prior_scale,
+            # seasonality_mode=seasonality_mode,
+            # seasonality_prior_scale=seasonality_prior_scale,
+            # changepoint_range=changepoint_range,
+            # changepoint_prior_scale=changepoint_prior_scale,
             yearly_seasonality=ys,
-            weekly_seasonality=True,
+            weekly_seasonality=False,
             daily_seasonality=False,
-            holidays_prior_scale=holidays_prior_scale,
+            # holidays_prior_scale=holidays_prior_scale,
         )
 
         # Add monthly seasonality if enough data.
@@ -42,7 +42,7 @@ class ProphetModel:
             self.prophet.add_seasonality(period=30.5, fourier_order=seasonality_prior_scale, name="monthly")
 
         # Add country specific holidays.
-        self.prophet.add_country_holidays(country_name="US")
+        # self.prophet.add_country_holidays(country_name="US")
         self.horizon = horizon
         self.outlier_remove_window = outlier_remove_window
 
@@ -60,7 +60,6 @@ class ProphetModel:
             self.train["floor"] = self.min_y
 
         with suppress_stdout_stderr():  # To eliminate write outputs to terminal.
-            self.train.to_csv('./trainTTT.csv')
             self.prophet.fit(self.train)
 
     def predict(self):
@@ -74,8 +73,8 @@ class ProphetModel:
 
         # If logistic model is used with cap and floor, it also needs to be added to the future data.
         if self.growth == "logistic":
-            future["cap"] = self.max_y * 2
-            future["floor"] = self.min_y
+            future["cap"] = self.max_y * 1.2
+            future["floor"] = self.max_y * 0.8
         future = pd.concat([future, self.additional_features], axis=1)
         forecast = self.prophet.predict(future)
         return forecast

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import os
 from turkish_gekko_packages.binance_service import TurkishGekkoBinanceService
 from utils import *
 
@@ -8,7 +7,6 @@ class TurkishGekkoProphetService:
     def __init__(self, _config):
         self.coin = _config.get('coin')
         self.OPEN_TIME = 'Open Time'
-        self.HIGH = 'High'
         self.TOTAL_DAY_COUNT = 14
         self.WINDOW_DAY = 1
         self.WINDOW_4H = 6 * 7
@@ -47,11 +45,12 @@ class TurkishGekkoProphetService:
 
         return df
 
-    def apply_windowing(self, df, _type, _range):
+    @staticmethod
+    def apply_windowing(df, _type, _range, _cesit):
         data = {}
         for i in range(0, _range):
             try:
-                data[f'{_type}_{i}'] = df[self.HIGH][i]
+                data[f'{_type}_{i}'] = df[_cesit][i]
             except:
                 break
         return pd.DataFrame(data, index=[0])
@@ -91,27 +90,21 @@ class TurkishGekkoProphetService:
         df = df.sort_values(by='Open Time', ascending=False, ignore_index=True)
         return df
 
-    @staticmethod
-    def gune_ait_dosya_adi_olustur(coin, bugun):
-        file_name = f'./coindata/{coin}/daily/{coin}_{bugun}.csv'
+    def dosya_adi_olustur(self, bugun, cesit):
+        file_name = f'./coindata/{self.coin}/daily/{cesit}/{self.coin}_{cesit}_{bugun}.csv'
         return file_name
 
-    def belli_aralik_icin_input_verisi_olustur(self, baslangic_gunu, bitis_gunu):
-        while baslangic_gunu <= bitis_gunu:
-            file_name = self.gune_ait_dosya_adi_olustur(self.coin, datetime.strftime(baslangic_gunu, '%Y_%m_%d'))
-            if os.path.isfile(file_name):
-                return
-            df = self.gunluk_satir_olustur(self.coin, baslangic_gunu)
-            print(f'{baslangic_gunu} icin satir hazirlandi!!')
-            baslangic_gunu = baslangic_gunu + timedelta(days=1)
-            df.to_csv(file_name, index=False)
+    def belli_aralik_icin_input_verisi_olustur(self, file_name, baslangic_gunu, cesit):
+        df = self.gunluk_satir_olustur(self.coin, baslangic_gunu, cesit)
+        print(f'{baslangic_gunu} {cesit} icin satir hazirlandi!!')
+        df.to_csv(file_name, index=False)
 
-    def gunluk_satir_olustur(self, coin, today):
+    def gunluk_satir_olustur(self, coin, today, cesit):
         daily, fourhour, onehour, fiftmins = self.tg_binance_service.zaman_serisi_fraktali_olustur(coin, today)
         daily, fourhour, onehour, fiftmins = self.dataframe_schemasina_cevir_ana(daily, fourhour, onehour, fiftmins)
-        _1g = daily[[self.OPEN_TIME, self.HIGH]]
-        _4s = self.apply_windowing(fourhour, '4H', self.WINDOW_4H)
-        _1s = self.apply_windowing(onehour, '1H', self.WINDOW_1H)
-        _15m = self.apply_windowing(fiftmins, '15M', self.WINDOW_15M)
+        _1g = daily[[self.OPEN_TIME, cesit]]
+        _4s = self.apply_windowing(fourhour, '4H', self.WINDOW_4H, cesit)
+        _1s = self.apply_windowing(onehour, '1H', self.WINDOW_1H, cesit)
+        _15m = self.apply_windowing(fiftmins, '15M', self.WINDOW_15M, cesit)
         result = pd.concat([_1g, _4s, _1s, _15m], axis=1)  # kolon olarak ekliyor
         return result
