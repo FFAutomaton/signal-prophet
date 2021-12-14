@@ -10,8 +10,8 @@ if __name__ == '__main__':
     _config = {'API_KEY': API_KEY, 'API_SECRET': API_SECRET, "coin": 'ETHUSDT'}
 
     prophet_service = TurkishGekkoProphetService(_config)
-    basl_str = '2021-02-13'
-    bit_str = '2021-03-01'
+    basl_str = '2021-10-01'
+    bit_str = '2021-11-01'
     baslangic_gunu = datetime.strptime(basl_str, '%Y-%m-%d')
     bitis_gunu = datetime.strptime(bit_str, '%Y-%m-%d')
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             if not os.path.isfile(file_name):
                 prophet_service.belli_aralik_icin_input_verisi_olustur(file_name, baslangic_gunu, cesit)
             train, additional_feature_data = model_verisini_getir(
-                _config.get('coin'), datetime.strftime(baslangic_gunu - timedelta(days=1), '%Y-%m-%d'), cesit
+                _config.get('coin'), baslangic_gunu, cesit
             )
             start = time.time()
             print('egitim baslasin...')

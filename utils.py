@@ -33,35 +33,31 @@ def tahminlere_ekle(_config, tahminler):
         f_object.close()
 
 
+def boslari_doldur(main_dataframe):
+    if main_dataframe.isnull().any().any():
+        for index, row in main_dataframe.isnull().iterrows():
+            for i, v in enumerate(row.values):
+                if v:
+                    main_dataframe.at[index, row.index[i]] = main_dataframe.mean(axis=1)[index]
+    return main_dataframe
+
+
 def butun_dosyalari_yukle(coin, bugun, cesit):
     folder_path = f'./coindata/{coin}/daily/{cesit}/'
-    tum_data_dosya_adi = f'./coindata/{coin}/{cesit}_all.csv'
-    main_dataframe = None
-    print(f'------butun_dosyalari_yukle {cesit}--------')
-    try:
-        # os.remove(tum_data_dosya_adi)
-        # print('Dosya silme tamam devam et!')
-        # raise('Dosya silme tamam devam et!')
-        df_all = pd.read_csv(tum_data_dosya_adi)
-        main_dataframe = df_all
-        if bugun not in main_dataframe['Open Time'].values:
-            bugunun_datasi = pd.read_csv(f'{folder_path}{coin}_{cesit}_{bugun}.csv')
-            main_dataframe = pd.concat([main_dataframe, bugunun_datasi])
-    except:
-        # load all files
-        print('dosya yuklemesi basliyor')
-        file_list = glob.glob(folder_path + f"*_{cesit}_*.csv")
-        main_dataframe = pd.DataFrame(pd.read_csv(file_list[0]))
-        for i in range(1, len(file_list)):
-            data = pd.read_csv(file_list[i])
-            # df = pd.DataFrame(data)
-            main_dataframe = pd.concat([main_dataframe, data])
+    # tum_data_dosya_adi = f'./coindata/{coin}/{cesit}_all.csv'
+    # main_dataframe = None
+    file_list = glob.glob(folder_path + f"*_{cesit}_*.csv")
+    main_dataframe = pd.DataFrame(pd.read_csv(file_list[0]))
+
+    for i in range(1, len(file_list)):
+        data = pd.read_csv(file_list[i])
+        main_dataframe = pd.concat([main_dataframe, data])
     print('date cast basliyor')
-    main_dataframe[["Open Time"]].apply(pd.to_datetime)
+    main_dataframe['Open Time'] = main_dataframe[["Open Time"]].apply(pd.to_datetime)
     main_dataframe = main_dataframe.sort_values(by='Open Time', ascending=False, ignore_index=True)
-    main_dataframe = main_dataframe.interpolate(method='pad')
+    main_dataframe = main_dataframe[main_dataframe['Open Time'] < bugun].reset_index(drop=True)
+    main_dataframe = boslari_doldur(main_dataframe)
     print('all dosya yazma basliyor')
-    main_dataframe.to_csv(tum_data_dosya_adi, index=False)
     return main_dataframe
 
 
