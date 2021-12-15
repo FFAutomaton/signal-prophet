@@ -52,12 +52,11 @@ def butun_dosyalari_yukle(coin, bugun, cesit):
     for i in range(1, len(file_list)):
         data = pd.read_csv(file_list[i])
         main_dataframe = pd.concat([main_dataframe, data])
-    print('date cast basliyor')
     main_dataframe['Open Time'] = main_dataframe[["Open Time"]].apply(pd.to_datetime)
     main_dataframe = main_dataframe.sort_values(by='Open Time', ascending=False, ignore_index=True)
     main_dataframe = main_dataframe[main_dataframe['Open Time'] < bugun].reset_index(drop=True)
     main_dataframe = boslari_doldur(main_dataframe)
-    print('all dosya yazma basliyor')
+    print('maindataframe hazir!')
     return main_dataframe
 
 
@@ -86,6 +85,16 @@ def model_verisini_getir(coin, bugun, cesit):
     additional_data = addit_kirp(df)
     train, future_add_data = kaydir_birlestir(train, additional_data)
     return train, future_add_data
+
+
+def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu):
+    coin = _config.get('coin')
+    data = prophet_service.tg_binance_service.get_client().get_historical_klines(
+        symbol=coin, interval='1d',
+        start_str=str(baslangic_gunu), end_str=str(bitis_gunu), limit=500
+    )
+    df = prophet_service.dataframe_schemasina_cevir_isci(data)
+    df.to_csv(f'./coindata/{coin}/{coin}_daily_all.csv', index=False)
 
 
 if __name__ == '__main__':
