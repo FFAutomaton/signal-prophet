@@ -5,7 +5,7 @@ from ml.model_utils.supressor import suppress_stdout_stderr
 
 
 class ProphetModel:
-    def __init__(self, train, horizon, additional_features, growth="linear",
+    def __init__(self, train, horizon, additional_features=None, growth="linear",
                  seasonality_mode="multiplicative", changepoint_range=0.9, changepoint_prior_scale=0.01,
                  seasonality_prior_scale=10, holidays_prior_scale=10, outlier_remove_window=0
                  ):
@@ -37,9 +37,10 @@ class ProphetModel:
             # holidays_prior_scale=holidays_prior_scale,
         )
 
-        # Add monthly seasonality if enough data.
-        if self.train.shape[0] > 90:
-            self.prophet.add_seasonality(period=30.5, fourier_order=seasonality_prior_scale, name="monthly")
+        # TODO:: add 4H 1D seasonality
+        self.prophet.add_seasonality(period=24, fourier_order=10, name="daily")
+        self.prophet.add_seasonality(period=24*7, fourier_order=6, name="weekly")
+        self.prophet.add_seasonality(period=24*30, fourier_order=3, name="monthly")
 
         # Add country specific holidays.
         # self.prophet.add_country_holidays(country_name="US")
@@ -75,7 +76,8 @@ class ProphetModel:
         if self.growth == "logistic":
             future["cap"] = self.max_y * 1.2
             future["floor"] = self.max_y * 0.8
-        future = pd.concat([future, self.additional_features], axis=1)
+        if self.additional_features is not None:
+            future = pd.concat([future, self.additional_features], axis=1)
         forecast = self.prophet.predict(future)
         return forecast
 

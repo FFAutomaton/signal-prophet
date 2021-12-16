@@ -1,11 +1,9 @@
-import os
 import pandas as pd
-import glob
 from csv import writer
 from ml.model_classes.prophet_model import ProphetModel
 
 
-def model_egit_tahmin_et(train, additional_feature_data):
+def model_egit_tahmin_et(train):
     m_params = {
         "changepoint_prior_scale": 0.1,
         "seasonality_prior_scale": 1,
@@ -14,7 +12,6 @@ def model_egit_tahmin_et(train, additional_feature_data):
     }
     model = ProphetModel(
         train=train,
-        additional_features=additional_feature_data,
         changepoint_prior_scale=m_params.get("changepoint_prior_scale"),
         seasonality_prior_scale=m_params.get("seasonality_prior_scale"),
         holidays_prior_scale=m_params.get("holidays_prior_scale"),
@@ -42,16 +39,10 @@ def boslari_doldur(main_dataframe):
     return main_dataframe
 
 
-def butun_dosyalari_yukle(coin, bugun, cesit):
-    folder_path = f'./coindata/{coin}/daily/{cesit}/'
-    # tum_data_dosya_adi = f'./coindata/{coin}/{cesit}_all.csv'
-    # main_dataframe = None
-    file_list = glob.glob(folder_path + f"*_{cesit}_*.csv")
-    main_dataframe = pd.DataFrame(pd.read_csv(file_list[0]))
+def dosya_yukle(coin, bugun, cesit, pencere):
+    tum_data_dosya_adi = f'./coindata/{coin}/{coin}_{pencere}_all.csv'
+    main_dataframe = pd.read_csv(tum_data_dosya_adi)
 
-    for i in range(1, len(file_list)):
-        data = pd.read_csv(file_list[i])
-        main_dataframe = pd.concat([main_dataframe, data])
     main_dataframe['Open Time'] = main_dataframe[["Open Time"]].apply(pd.to_datetime)
     main_dataframe = main_dataframe.sort_values(by='Open Time', ascending=False, ignore_index=True)
     main_dataframe = main_dataframe[main_dataframe['Open Time'] < bugun].reset_index(drop=True)
@@ -61,40 +52,37 @@ def butun_dosyalari_yukle(coin, bugun, cesit):
 
 
 def train_kirp_yeniden_adlandir(df, cesit):
-    train = df.iloc[:, :2]
-    train = train.rename(columns={"Open Time": "ds"})
+    # df = df.iloc[:, :2]
+    train = df.rename(columns={"Open Time": "ds"})
     train = train.rename(columns={cesit: "y"})
     return train
-
-
-def addit_kirp(df):
-    return df.iloc[:, 2:]
 
 
 def kaydir_birlestir(train, additional_data):
     train = train.iloc[:-1, :]
     future_add_data = additional_data.iloc[:1, :]
-    additional_data = additional_data.iloc[1:, :].reset_index(drop=True)
     train = pd.concat([train, additional_data], axis=1)
     return train, future_add_data
 
 
-def model_verisini_getir(coin, bugun, cesit):
-    df = butun_dosyalari_yukle(coin, bugun, cesit)
-    train = train_kirp_yeniden_adlandir(df, cesit)
-    additional_data = addit_kirp(df)
-    train, future_add_data = kaydir_birlestir(train, additional_data)
-    return train, future_add_data
-
-
-def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu):
+def model_verisini_getir(_config, bugun, cesit):
     coin = _config.get('coin')
+    pencere = _config.get('pencere')
+    df = dosya_yukle(coin, bugun, cesit, pencere)
+    train = train_kirp_yeniden_adlandir(df, cesit)
+    return train
+
+
+def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, tip):
+    coin = _config.get('coin')
+
     data = prophet_service.tg_binance_service.get_client().get_historical_klines(
-        symbol=coin, interval='1d',
+        symbol=coin, interval=tip,
         start_str=str(baslangic_gunu), end_str=str(bitis_gunu), limit=500
     )
     df = prophet_service.dataframe_schemasina_cevir_isci(data)
-    df.to_csv(f'./coindata/{coin}/{coin}_daily_all.csv', index=False)
+    df.to_csv(f'./coindata/{coin}/{coin}_{tip}_all.csv', mode='a', index=False, header=False)
+    print(f'export tamamlandi {tip}')
 
 
 if __name__ == '__main__':
