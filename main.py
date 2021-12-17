@@ -7,42 +7,41 @@ from utils import *
 
 
 def propheti_calistir(_config, baslangic_gunu, bitis_gunu):
+    arttir = _config.get('arttir')
     prophet_service = TurkishGekkoProphetService(_config)
 
-    # export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, '1d')
-    # export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, '4h')
-    # export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, '1h')
-    while baslangic_gunu <= bitis_gunu + timedelta(seconds=1):
+    # export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu)
+    while baslangic_gunu <= bitis_gunu:
         tahmin = []
-        tahmin = [datetime.strftime(baslangic_gunu, '%Y-%m-%d')]
-        for cesit in ['Low']:
-            train = model_verisini_getir(
-                _config , baslangic_gunu, cesit
-            )
-            start = time.time()
-            print('egitim baslasin...')
-            forecast = model_egit_tahmin_et(train)
-            print(f'egitim bitti sure: {time.time() - start}')
-            tahmin.append(forecast.get('yhat').values[0])
-            tahminlere_ekle(_config, tahmin)
+        tahmin = [datetime.strftime(baslangic_gunu, '%Y-%m-%d %H:%M:%S')]
+        start = time.time()
+        open_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Open')
+        high_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'High')
+        low_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Low')
+        close_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Close')
+        print(f'egitim bitti sure: {time.time() - start}')
+        tahmin.extend([open_tahmin, high_tahmin,low_tahmin, close_tahmin])
+        tahmin.append(_close)
+        # tahmin, _config = islem_hesapla_low(_config, tahmin)
+        tahmin, _config = islem_hesapla_open_close(_config, tahmin)
+        tahminlere_ekle(_config, tahmin)
         print(f'{baslangic_gunu} icin bitti!')
-        baslangic_gunu = baslangic_gunu + timedelta(days=1)
+        baslangic_gunu = baslangic_gunu + timedelta(hours=arttir)
 
     return tahmin
 
 
 if __name__ == '__main__':
-    _config = {'API_KEY': API_KEY, 'API_SECRET': API_SECRET, "coin": 'ETHUSDT', "pencere": "1d"}
-    baslangic_gunu = datetime.strptime('2021-12-16', '%Y-%m-%d')
-    bitis_gunu = datetime.strptime('2021-12-16', '%Y-%m-%d')
-    bitis_gunu = bitis_gunu - timedelta(seconds=1)
+    _config = {
+        "API_KEY": API_KEY, "API_SECRET": API_SECRET, "coin": 'ETHUSDT', "pencere": "1d", "arttir": 24,
+        "wallet": {"ETH": 0, "USDT": 1000}
+    }
+    baslangic_gunu = datetime.strptime('2021-09-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    bitis_gunu = datetime.strptime('2021-12-17 00:00:00', '%Y-%m-%d %H:%M:%S')
 
     propheti_calistir(_config, baslangic_gunu, bitis_gunu)
-    # TODO:: Fix file append issue, prepare finish ts for historical klines
-    # TODO:: Daily sinyal
-    # TODO:: 4H sinyal
-    # TODO:: 1H sinyal
-    # TODO:: Sadece fiyat kullan regressorlari kaldir
+    # TODO:: Backtest kodunu yaz tahminlere ekle kar zarar durumunu
+    # TODO:: 4h 1d karsilastir
 
 
     tahmin_schema = {

@@ -1,6 +1,18 @@
 import pandas as pd
 from csv import writer
 from ml.model_classes.prophet_model import ProphetModel
+from datetime import timedelta
+
+
+def tahmin_getir(_config, baslangic_gunu, cesit):
+    arttir = _config.get('arttir')
+    train = model_verisini_getir(_config, baslangic_gunu, cesit)
+    forecast = model_egit_tahmin_et(train)
+    try:
+        _close = train[train['ds'] == baslangic_gunu - timedelta(hours=arttir)].get("Close").values[0]
+    except:
+        _close = train[train['ds'] == baslangic_gunu - timedelta(hours=arttir)].get("y").values[0]
+    return forecast.get('yhat').values[0], _close
 
 
 def model_egit_tahmin_et(train):
@@ -30,6 +42,44 @@ def tahminlere_ekle(_config, tahminler):
         f_object.close()
 
 
+def islem_hesapla_open_close(_config, tahmin):
+    wallet = _config.get("wallet")
+    suanki_fiyat = tahmin[5]
+    highp = tahmin[2]
+    lowp = tahmin[3]
+    if lowp - suanki_fiyat > 50:
+        if wallet["USDT"] != 0:
+            wallet["ETH"] = wallet["USDT"] / suanki_fiyat
+            wallet["USDT"] = 0
+    elif lowp - suanki_fiyat <= -50:
+        if wallet["ETH"] != 0:
+            wallet["USDT"] = wallet["ETH"] * suanki_fiyat
+            wallet["ETH"] = 0
+
+    _config["wallet"] = wallet
+    tahmin.append(wallet["ETH"])
+    tahmin.append(wallet["USDT"])
+    return tahmin, _config
+
+
+
+def islem_hesapla_low(_config, tahmin):
+    wallet = _config.get("wallet")
+    suanki_fiyat = tahmin[2]
+    if tahmin[1] - suanki_fiyat > 50:
+        if wallet["USDT"] != 0:
+            wallet["ETH"] = wallet["USDT"] / suanki_fiyat
+            wallet["USDT"] = 0
+    elif tahmin[1] - suanki_fiyat < -50:
+        if wallet["ETH"] != 0:
+            wallet["USDT"] = wallet["ETH"] * suanki_fiyat
+            wallet["ETH"] = 0
+    _config["wallet"] = wallet
+    tahmin.append(wallet["ETH"])
+    tahmin.append(wallet["USDT"])
+    return tahmin, _config
+
+
 def boslari_doldur(main_dataframe):
     if main_dataframe.isnull().any().any():
         for index, row in main_dataframe.isnull().iterrows():
@@ -39,13 +89,13 @@ def boslari_doldur(main_dataframe):
     return main_dataframe
 
 
-def dosya_yukle(coin, bugun, cesit, pencere):
+def dosya_yukle(coin, suan, cesit, pencere):
     tum_data_dosya_adi = f'./coindata/{coin}/{coin}_{pencere}_all.csv'
     main_dataframe = pd.read_csv(tum_data_dosya_adi)
 
     main_dataframe['Open Time'] = main_dataframe[["Open Time"]].apply(pd.to_datetime)
     main_dataframe = main_dataframe.sort_values(by='Open Time', ascending=False, ignore_index=True)
-    main_dataframe = main_dataframe[main_dataframe['Open Time'] < bugun].reset_index(drop=True)
+    main_dataframe = main_dataframe[main_dataframe['Open Time'] < suan].reset_index(drop=True)
     main_dataframe = boslari_doldur(main_dataframe)
     print('maindataframe hazir!')
     return main_dataframe
@@ -58,22 +108,19 @@ def train_kirp_yeniden_adlandir(df, cesit):
     return train
 
 
-def kaydir_birlestir(train, additional_data):
-    train = train.iloc[:-1, :]
-    future_add_data = additional_data.iloc[:1, :]
-    train = pd.concat([train, additional_data], axis=1)
-    return train, future_add_data
-
-
-def model_verisini_getir(_config, bugun, cesit):
+def model_verisini_getir(_config, suan, cesit):
     coin = _config.get('coin')
     pencere = _config.get('pencere')
-    df = dosya_yukle(coin, bugun, cesit, pencere)
+    df = dosya_yukle(coin, suan, cesit, pencere)
     train = train_kirp_yeniden_adlandir(df, cesit)
     return train
 
 
-def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, tip):
+def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu):
+    tip = _config.get('pencere')
+    arttir = _config.get('arttir')
+    if baslangic_gunu == bitis_gunu:
+        bitis_gunu = baslangic_gunu + timedelta(hours=arttir) - timedelta(seconds=1)
     coin = _config.get('coin')
 
     data = prophet_service.tg_binance_service.get_client().get_historical_klines(
@@ -87,4 +134,4 @@ def export_all_data(prophet_service, _config, baslangic_gunu, bitis_gunu, tip):
 
 if __name__ == '__main__':
     bugun = '2021-12-06'
-    model_verisini_getir('ETHUSDT', bugun)
+    model_verisini_getir('ETHUSDT', bugun, )

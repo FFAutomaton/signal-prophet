@@ -37,10 +37,9 @@ class ProphetModel:
             # holidays_prior_scale=holidays_prior_scale,
         )
 
-        # TODO:: add 4H 1D seasonality
-        self.prophet.add_seasonality(period=24, fourier_order=10, name="daily")
-        self.prophet.add_seasonality(period=24*7, fourier_order=6, name="weekly")
-        self.prophet.add_seasonality(period=24*30, fourier_order=3, name="monthly")
+        # self.prophet.add_seasonality(period=24, fourier_order=10, name="daily")
+        # self.prophet.add_seasonality(period=24*7, fourier_order=6, name="weekly")
+        # self.prophet.add_seasonality(period=24*30, fourier_order=3, name="monthly")
 
         # Add country specific holidays.
         # self.prophet.add_country_holidays(country_name="US")
