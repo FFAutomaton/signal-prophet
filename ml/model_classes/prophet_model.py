@@ -6,8 +6,8 @@ from ml.model_utils.supressor import suppress_stdout_stderr
 
 class ProphetModel:
     def __init__(self, train, horizon, additional_features=None, growth="linear",
-                 seasonality_mode="multiplicative", changepoint_range=0.9, changepoint_prior_scale=0.01,
-                 seasonality_prior_scale=10, holidays_prior_scale=10, outlier_remove_window=0
+                 seasonality_mode="additive", changepoint_range=0.95, changepoint_prior_scale=0.1,
+                 seasonality_prior_scale=7, holidays_prior_scale=10, outlier_remove_window=0
                  ):
         self.train = train
         self.additional_features = additional_features
@@ -36,7 +36,7 @@ class ProphetModel:
             daily_seasonality=False,
             # holidays_prior_scale=holidays_prior_scale,
         )
-
+        #
         # self.prophet.add_seasonality(period=24, fourier_order=10, name="daily")
         # self.prophet.add_seasonality(period=24*7, fourier_order=6, name="weekly")
         # self.prophet.add_seasonality(period=24*30, fourier_order=3, name="monthly")

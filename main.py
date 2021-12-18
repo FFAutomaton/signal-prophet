@@ -15,6 +15,7 @@ def propheti_calistir(_config, baslangic_gunu, bitis_gunu):
         tahmin = []
         tahmin = [datetime.strftime(baslangic_gunu, '%Y-%m-%d %H:%M:%S')]
         start = time.time()
+        # TODO:: add lower upper bounds and see if there can be a strategy there
         open_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Open')
         high_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'High')
         low_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Low')
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         "wallet": {"ETH": 0, "USDT": 1000}
     }
     baslangic_gunu = datetime.strptime('2021-09-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-    bitis_gunu = datetime.strptime('2021-12-17 00:00:00', '%Y-%m-%d %H:%M:%S')
+    bitis_gunu = datetime.strptime('2021-12-18 00:00:00', '%Y-%m-%d %H:%M:%S')
 
     propheti_calistir(_config, baslangic_gunu, bitis_gunu)
     # TODO:: Backtest kodunu yaz tahminlere ekle kar zarar durumunu

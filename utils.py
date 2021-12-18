@@ -24,11 +24,6 @@ def model_egit_tahmin_et(train):
     }
     model = ProphetModel(
         train=train,
-        changepoint_prior_scale=m_params.get("changepoint_prior_scale"),
-        seasonality_prior_scale=m_params.get("seasonality_prior_scale"),
-        holidays_prior_scale=m_params.get("holidays_prior_scale"),
-        changepoint_range=m_params.get("changepoint_range"),
-        outlier_remove_window=m_params.get("outlier_remove_window"),
         horizon=1,
     )
     model.fit()
@@ -47,6 +42,7 @@ def islem_hesapla_open_close(_config, tahmin):
     suanki_fiyat = tahmin[5]
     highp = tahmin[2]
     lowp = tahmin[3]
+    closep = tahmin[4]
     if lowp - suanki_fiyat > 50:
         if wallet["USDT"] != 0:
             wallet["ETH"] = wallet["USDT"] / suanki_fiyat

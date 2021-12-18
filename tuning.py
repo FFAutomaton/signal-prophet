@@ -11,7 +11,7 @@ _config = {
     "wallet": {"ETH": 0, "USDT": 1000}
 }
 baslangic_gunu = datetime.strptime('2021-12-16 00:00:00', '%Y-%m-%d %H:%M:%S')
-train = model_verisini_getir(_config, baslangic_gunu, 'Low')
+train = model_verisini_getir(_config, baslangic_gunu, 'Close')
 
 
 import itertools
@@ -20,9 +20,12 @@ import pandas as pd
 
 param_grid = {
     "seasonality_mode": ['additive', 'multiplicative'],
-    'changepoint_prior_scale': [0.001, 0.01, 0.1, 0.5],
-    'seasonality_prior_scale': [0.01, 0.1, 1.0, 10.0],
-    'changepoint_range': [0.8, 0.95, 0.05],
+    'changepoint_prior_scale': [0.1],
+    # 'changepoint_prior_scale': [0.001, 0.01, 0.1, 0.5],
+    'seasonality_prior_scale': [7.0],
+    # 'seasonality_prior_scale': [0.01, 0.1, 1.0, 10.0],
+    'changepoint_range': [0.95],
+    # 'changepoint_range': [0.8, 0.95, 0.05],
 }
 
 # Generate all combinations of parameters
