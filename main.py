@@ -21,7 +21,10 @@ def propheti_calistir(_config, baslangic_gunu, bitis_gunu):
         low_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Low')
         close_tahmin, _close = tahmin_getir(_config, baslangic_gunu, 'Close')
         print(f'egitim bitti sure: {time.time() - start}')
-        tahmin.extend([open_tahmin, high_tahmin,low_tahmin, close_tahmin])
+        tahmin.extend([open_tahmin["yhat_lower"].values[0], open_tahmin["yhat_upper"].values[0],
+                       high_tahmin["yhat_lower"].values[0], high_tahmin["yhat_upper"].values[0],
+                       low_tahmin["yhat_lower"].values[0], low_tahmin["yhat_upper"].values[0],
+                       close_tahmin["yhat_lower"].values[0], close_tahmin["yhat_upper"].values[0]])
         tahmin.append(_close)
         # tahmin, _config = islem_hesapla_low(_config, tahmin)
         tahmin, _config = islem_hesapla_open_close(_config, tahmin)
@@ -37,8 +40,8 @@ if __name__ == '__main__':
         "API_KEY": API_KEY, "API_SECRET": API_SECRET, "coin": 'ETHUSDT', "pencere": "1d", "arttir": 24,
         "wallet": {"ETH": 0, "USDT": 1000}
     }
-    baslangic_gunu = datetime.strptime('2021-09-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-    bitis_gunu = datetime.strptime('2021-12-18 00:00:00', '%Y-%m-%d %H:%M:%S')
+    baslangic_gunu = datetime.strptime('2021-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    bitis_gunu = datetime.strptime('2021-12-20 00:00:00', '%Y-%m-%d %H:%M:%S')
 
     propheti_calistir(_config, baslangic_gunu, bitis_gunu)
     # TODO:: Backtest kodunu yaz tahminlere ekle kar zarar durumunu

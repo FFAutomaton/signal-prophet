@@ -6,7 +6,7 @@ from ml.model_utils.supressor import suppress_stdout_stderr
 
 class ProphetModel:
     def __init__(self, train, horizon, additional_features=None, growth="linear",
-                 seasonality_mode="additive", changepoint_range=0.95, changepoint_prior_scale=0.1,
+                 seasonality_mode="additive", changepoint_range=0.95, changepoint_prior_scale=0.05,
                  seasonality_prior_scale=7, holidays_prior_scale=10, outlier_remove_window=0
                  ):
         self.train = train
@@ -18,22 +18,15 @@ class ProphetModel:
 
         self.growth = growth
 
-        # If we have more than 1 year data, use yearly seasonality.
-        if self.train.shape[0] < 730:
-            ys = False
-        else:
-            ys = True
-
         # Create model prophet model object.
         self.prophet = Prophet(
             growth=growth,
-            # seasonality_mode=seasonality_mode,
-            # seasonality_prior_scale=seasonality_prior_scale,
-            # changepoint_range=changepoint_range,
-            # changepoint_prior_scale=changepoint_prior_scale,
-            yearly_seasonality=ys,
-            weekly_seasonality=False,
-            daily_seasonality=False,
+            seasonality_mode=seasonality_mode,
+            seasonality_prior_scale=seasonality_prior_scale,
+            changepoint_range=changepoint_range,
+            changepoint_prior_scale=changepoint_prior_scale,
+            yearly_seasonality=False,
+            weekly_seasonality=True,
             # holidays_prior_scale=holidays_prior_scale,
         )
         #

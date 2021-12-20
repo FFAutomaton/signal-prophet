@@ -12,7 +12,7 @@ def tahmin_getir(_config, baslangic_gunu, cesit):
         _close = train[train['ds'] == baslangic_gunu - timedelta(hours=arttir)].get("Close").values[0]
     except:
         _close = train[train['ds'] == baslangic_gunu - timedelta(hours=arttir)].get("y").values[0]
-    return forecast.get('yhat').values[0], _close
+    return forecast, _close
 
 
 def model_egit_tahmin_et(train):
@@ -39,18 +39,17 @@ def tahminlere_ekle(_config, tahminler):
 
 def islem_hesapla_open_close(_config, tahmin):
     wallet = _config.get("wallet")
-    suanki_fiyat = tahmin[5]
-    highp = tahmin[2]
-    lowp = tahmin[3]
-    closep = tahmin[4]
-    if lowp - suanki_fiyat > 50:
-        if wallet["USDT"] != 0:
-            wallet["ETH"] = wallet["USDT"] / suanki_fiyat
-            wallet["USDT"] = 0
-    elif lowp - suanki_fiyat <= -50:
+    suanki_fiyat = tahmin[9]
+    highp = tahmin[4]
+    lowp = tahmin[5]
+    if suanki_fiyat > highp * 1.005:
         if wallet["ETH"] != 0:
             wallet["USDT"] = wallet["ETH"] * suanki_fiyat
             wallet["ETH"] = 0
+    elif suanki_fiyat <= lowp * 0.998:
+        if wallet["USDT"] != 0:
+            wallet["ETH"] = wallet["USDT"] / suanki_fiyat
+            wallet["USDT"] = 0
 
     _config["wallet"] = wallet
     tahmin.append(wallet["ETH"])
@@ -85,7 +84,7 @@ def boslari_doldur(main_dataframe):
     return main_dataframe
 
 
-def dosya_yukle(coin, suan, cesit, pencere):
+def dosya_yukle(coin, suan, pencere):
     tum_data_dosya_adi = f'./coindata/{coin}/{coin}_{pencere}_all.csv'
     main_dataframe = pd.read_csv(tum_data_dosya_adi)
 
@@ -107,7 +106,7 @@ def train_kirp_yeniden_adlandir(df, cesit):
 def model_verisini_getir(_config, suan, cesit):
     coin = _config.get('coin')
     pencere = _config.get('pencere')
-    df = dosya_yukle(coin, suan, cesit, pencere)
+    df = dosya_yukle(coin, suan, pencere)
     train = train_kirp_yeniden_adlandir(df, cesit)
     return train
 
