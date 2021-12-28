@@ -1,7 +1,7 @@
 from prophet import Prophet
 import numpy as np
 import pandas as pd
-from ml.model_utils.supressor import suppress_stdout_stderr
+from signal_prophet.ml.model_utils.supressor import suppress_stdout_stderr
 
 
 class ProphetModel:

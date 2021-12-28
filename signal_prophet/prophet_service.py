@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from turkish_gekko_packages.binance_service import TurkishGekkoBinanceService
-from utils import *
+import pandas as pd
 
 
 class TurkishGekkoProphetService:
@@ -86,7 +86,7 @@ class TurkishGekkoProphetService:
             'Volume': Cvolume
         }
         df = pd.DataFrame(data)
-        df[["Open Time"]].apply(pd.to_datetime)
+        df["Open Time"] = df[["Open Time"]].apply(pd.to_datetime)
         df = df.sort_values(by='Open Time', ascending=False, ignore_index=True)
         return df
 

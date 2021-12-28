@@ -1,4 +1,4 @@
-from ml.model_classes.prophet_model import ProphetModel
+from signal_prophet.ml.model_classes.prophet_model import ProphetModel
 
 
 m_params = \

@@ -6,7 +6,7 @@ REQUIRED_PACKAGES = ['prophet==1.0.1', 'pandas==1.3.4',
 # dependency_links=[
 #         "git+git://github.com/turkish-gekko/service-binance-rest@master#egg=turkish_gekko_binance_service",
 #     ],
-with open("readme.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
