@@ -1,9 +1,8 @@
 from prophet.diagnostics import cross_validation
-from datetime import datetime, timedelta
+from datetime import datetime
 from prophet.diagnostics import performance_metrics
 
 from config import *
-from src.prophet_service import TurkishGekkoProphetService
 from utils import *
 
 _config = {

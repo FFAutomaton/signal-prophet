@@ -1,7 +1,7 @@
 from prophet import Prophet
 import pandas as pd
 
-df = pd.read_csv('../coindata/examples/example_wp_log_peyton_manning.csv')
+df = pd.read_csv('../../coindata/examples/example_wp_log_peyton_manning.csv')
 print(df.head())
 print(df.count())
 
