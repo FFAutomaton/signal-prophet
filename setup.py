@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="prophet_signaller",
+    name="signal_prophet",
     version="1.0",
     author="turkish gekko",
     author_email="turkish-gekko@turkish-gekko.org",
