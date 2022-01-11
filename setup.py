@@ -1,7 +1,7 @@
 import setuptools
 
 REQUIRED_PACKAGES = ['prophet==1.0.1', 'pandas==1.3.4',
-                     'turkish_gekko_binance_service @ git+git://github.com/turkish-gekko/service-binance-rest@main#egg=turkish_gekko_binance_service']
+                     'turkish_gekko_binance_service @ git+https://github.com/turkish-gekko/service-binance-rest@main#egg=turkish_gekko_binance_service']
 
 # dependency_links=[
 #         "git+git://github.com/turkish-gekko/service-binance-rest@master#egg=turkish_gekko_binance_service",
