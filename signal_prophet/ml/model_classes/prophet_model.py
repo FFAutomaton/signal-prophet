@@ -5,11 +5,12 @@ from signal_prophet.ml.model_utils.supressor import suppress_stdout_stderr
 
 
 class ProphetModel:
-    def __init__(self, train, horizon, additional_features=None, growth="linear",
+    def __init__(self, train, horizon, freq, additional_features=None, growth="linear",
                  seasonality_mode="additive", changepoint_range=0.95, changepoint_prior_scale=0.05,
                  seasonality_prior_scale=7, holidays_prior_scale=10, outlier_remove_window=0
                  ):
         self.train = train
+        self.freq = freq
         self.additional_features = additional_features
 
         # Get 99th and 20th percentile of historical data to determine cap and floor.
@@ -62,7 +63,7 @@ class ProphetModel:
         :rtype: Pandas.DataFrame
         """
         # Create future data to do prediction for these dates.
-        future = self.prophet.make_future_dataframe(periods=self.horizon, include_history=False)
+        future = self.prophet.make_future_dataframe(periods=self.horizon, include_history=False, freq=self.freq)
 
         # If logistic model is used with cap and floor, it also needs to be added to the future data.
         if self.growth == "logistic":
